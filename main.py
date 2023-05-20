@@ -2,30 +2,41 @@ from tkinter import *
 from tkinter import messagebox
 import random
 import pyperclip
+import json
 
 FONT = ('Times New Roman', 16)
 
 # the interface
 window = Tk()
-window.minsize(height=400, width=600)
+window.minsize(height=400, width=550)
 window.title('Password Manager')
 window.config(padx=50, pady=50)
 
 # saving the datas to the file
 def add_to_file():
     website = web_input.get()
-    user_mail = user_input.get()
+    user_mail = mail_input.get()
     passwords = pass_input.get()
-
+    pass_data = {website:{'email' : user_mail,'password' : passwords}}
     if len(website)!=0 and len(user_mail)!=0 and len(passwords)!=0:
         to_save = messagebox.askyesno(title='You sure!', message=f'Do u want to save these details ?\n Website : {website}\n Mail : {user_mail}\n Password : {passwords}')
         
         if to_save:
-            with open('pass.txt', 'a') as file:
-                file.write(f'\n{website} | {user_mail} | {passwords}')
-            web_input.delete(0, END)
-            user_input.delete(0, END)
-            pass_input.delete(0, END)
+            try:
+                with open('pass.json', 'r') as file:
+                    data = json.load(file)
+                    data.update(pass_data)
+
+                with open('pass.json', 'w') as file:
+                    json.dump(data, file, indent=4)
+
+            except:
+                with open('pass.json', 'w') as file:
+                    json.dump(pass_data, file, indent=4)
+            finally:
+                web_input.delete(0, END)
+                mail_input.delete(0, END)
+                pass_input.delete(0, END)
 
     else:
         messagebox.showerror(title='Error', message='Some details are empty!')
@@ -49,7 +60,15 @@ def to_gen_pass():
     # this code copied the generated password to clipboard
     pyperclip.copy(gen_password)
 
-
+# to search password
+def search_passw():
+    website = web_input.get()
+    try:
+        with open('pass.json', 'r') as file:
+            p_data = json.load(file)
+            messagebox.showinfo(title=website, message='E-mail : '+p_data[website]['email']+'\nPassword : '+p_data[website]['password'])
+    except:
+        messagebox.showerror(message='There is no such website saved !')
 # background image
 canvas = Canvas(width=200, height=200)
 pic = PhotoImage(file='lock-logo.png')
@@ -60,25 +79,29 @@ canvas.grid(column=1, row=0)
 # inputs
 web_name = Label(text="Website : ", font=FONT)
 web_name.grid(column=0, row=1)
-web_input = Entry(width=50)
-web_input.grid(column=1, row=1, columnspan=2)
+web_input = Entry(width=30)
+web_input.grid(column=1, row=1)
 web_input.focus()
 
-user_name = Label(text='Username/E-mail : ', font=FONT)
-user_name.grid(column=0, row=2)
-user_input = Entry(width=50)
-user_input.grid(column=1, row=2, columnspan=2)
+pass_search = Button(text='Search', command=search_passw)
+pass_search.grid(column=2, row=1)
+pass_search.config(padx=38)
+
+mail_id = Label(text='E-mail : ', font=FONT)
+mail_id.grid(column=0, row=2)
+mail_input = Entry(width=30)
+mail_input.grid(column=1, row=2)
 
 password = Label(text='Password : ', font=FONT)
 password.grid(column=0, row=3)
-pass_input = Entry(width=27)
+pass_input = Entry(width=30)
 pass_input.grid(column=1, row=3)
 
 gen_pass = Button(text='Generate password', font=('TineNewRoman', 10), command=to_gen_pass)
-gen_pass.config(padx=5)
+gen_pass.config(padx=3)
 gen_pass.grid(column=2, row=3)
 
 add_tolist = Button(text='Add', font=('TineNewRoman', 10), width=37, command=add_to_file)
-add_tolist.config(pady=2)
+add_tolist.config(pady=2, padx=10)
 add_tolist.grid(column=1, row=4, columnspan=2)
 window.mainloop()
