@@ -14,7 +14,7 @@ window.config(padx=50, pady=50)
 
 # saving the datas to the file
 def add_to_file():
-    website = web_input.get()
+    website = web_input.get().lower()
     user_mail = mail_input.get()
     passwords = pass_input.get()
     pass_data = {website:{'email' : user_mail,'password' : passwords}}
@@ -62,7 +62,7 @@ def to_gen_pass():
 
 # to search password
 def search_passw():
-    website = web_input.get()
+    website = web_input.get().lower()
     try:
         with open('pass.json', 'r') as file:
             p_data = json.load(file)
